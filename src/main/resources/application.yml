@@ -42,3 +42,7 @@ shipping:
     free-shipping-threshold: 50000
     # 배송비 (원)
     fee: 2500
+
+# 주문 처리 전략 설정
+order:
+  strategy: optimistic  # pessimistic, concurrent, optimistic

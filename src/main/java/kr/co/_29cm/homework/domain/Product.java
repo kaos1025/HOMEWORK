@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,6 +41,10 @@ public class Product {
     @Column(name = "stock_quantity", nullable = false)
     @Schema(description = "재고수량", example = "45")
     private Integer stockQuantity;
+
+    @Version
+    @Schema(description = "버전 (낙관적 락용)", example = "1")
+    private Long version;
 
     public Product(Long productNumber, String name, BigDecimal price, Integer stockQuantity) {
         this.productNumber = productNumber;
