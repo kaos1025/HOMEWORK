@@ -11,8 +11,14 @@ import java.math.RoundingMode;
 
 /**
  * 금액을 나타내는 값 객체 (Value Object)
+ * 
+ * 금액의 정밀도를 보장하고 모든 금액 연산을 캡슐화합니다.
  * 정밀도 정책: precision=19, scale=2 (소수점 둘째 자리까지)
- * 모든 금액 연산 후 HALF_UP 라운딩 적용
+ * 모든 금액 연산 후 HALF_UP 라운딩을 적용하여 일관성을 보장합니다.
+ * 
+ * @author 29CM Homework
+ * @version 1.0
+ * @since 2025-01-19
  */
 @Embeddable
 @Getter

@@ -22,6 +22,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 주문 관리 REST 컨트롤러
+ * 
+ * 상품 주문 처리 및 멱등성 키 관리를 담당합니다.
+ * Idempotency-Key 헤더를 통한 중복 요청 방지 기능을 제공하며,
+ * 주문 생성 시 재고 관리 및 배송비 계산을 수행합니다.
+ * 
+ * @author 29CM Homework
+ * @version 1.0
+ * @since 2025-01-19
+ */
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -32,6 +43,17 @@ public class OrderController {
     private final OrderMapper orderMapper;
     private final IdempotencyService idempotencyService;
 
+    /**
+     * 상품 주문 처리
+     * 
+     * 주문 요청을 받아 상품을 주문합니다.
+     * Idempotency-Key 헤더가 제공된 경우 멱등성 서비스를 통해 중복 요청을 방지하고,
+     * 제공되지 않은 경우 일반 주문 처리를 수행합니다.
+     * 
+     * @param idempotencyKey 멱등성 보장을 위한 고유 키 (선택사항)
+     * @param orderRequest 주문 요청 정보
+     * @return 주문 처리 결과
+     */
     @PostMapping
     @Operation(
             summary = "상품 주문",
@@ -97,10 +119,10 @@ public class OrderController {
         
         Order order;
         if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
-            // Idempotency-Key가 있는 경우
+            // Idempotency-Key가 있는 경우: 멱등성 보장 처리
             order = idempotencyService.processWithIdempotency(idempotencyKey, () -> orderService.placeOrder(serviceRequests));
         } else {
-            // 일반 주문 처리
+            // Idempotency-Key가 없는 경우: 일반 주문 처리
             order = orderService.placeOrder(serviceRequests);
         }
         
