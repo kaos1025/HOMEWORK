@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co._29cm.homework.domain.Product;
 import kr.co._29cm.homework.repository.ProductRepository;
+import kr.co._29cm.homework.service.ShippingCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductRepository productRepository;
+    private final ShippingCalculator shippingCalculator;
 
     @GetMapping
     @Operation(
@@ -41,6 +43,25 @@ public class ProductController {
     })
     public List<Product> list() {
         return productRepository.findAll();
+    }
+
+    @GetMapping("/shipping-policy")
+    @Operation(
+            summary = "배송비 정책 조회",
+            description = "현재 적용된 배송비 정책 정보를 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "배송비 정책 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ShippingCalculator.ShippingPolicy.class)
+                    )
+            )
+    })
+    public ShippingCalculator.ShippingPolicy getShippingPolicy() {
+        return shippingCalculator.getShippingPolicy();
     }
 }
 
