@@ -91,6 +91,8 @@ public class GlobalExceptionHandler {
         return switch (e.getCode()) {
             case "PRODUCT_NOT_FOUND" -> HttpStatus.NOT_FOUND;
             case "INSUFFICIENT_STOCK", "INVALID_ORDER" -> HttpStatus.BAD_REQUEST;
+            case "DUPLICATE_REQUEST" -> HttpStatus.CONFLICT;
+            case "IDEMPOTENCY_KEY_EXPIRED" -> HttpStatus.GONE;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }

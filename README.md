@@ -40,6 +40,8 @@ gradlew.bat bootRun
   - 응답: `[ { id, productNumber, name, price, stockQuantity } ]`
 
 - **POST `/api/orders`** - 상품 주문
+  - **헤더** (선택사항):
+    - `Idempotency-Key`: 멱등성 보장을 위한 고유 키 (예: "req-123456789")
   - 요청 Body:
     ```json
     {
@@ -52,13 +54,18 @@ gradlew.bat bootRun
   - 응답 Body:
     ```json
     {
-      "orderNumber": "550e8400-e29b-41d4-a716-446655440000",
-      "orderedAt": "2025-01-19T12:00:00",
-      "items": [
-        { "productNumber": 768848, "productName": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종", "quantity": 1, "unitPrice": 21000 },
-        { "productNumber": 759928, "productName": "마스크 스트랩 분실방지 오염방지 목걸이", "quantity": 2, "unitPrice": 2800 }
-      ],
-      "paymentAmount": 26600
+      "success": true,
+      "message": "주문이 성공적으로 처리되었습니다",
+      "data": {
+        "orderNumber": "550e8400-e29b-41d4-a716-446655440000",
+        "orderedAt": "2025-01-19T12:00:00",
+        "items": [
+          { "productNumber": 768848, "productName": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종", "quantity": 1, "unitPrice": 21000, "subtotal": 21000 },
+          { "productNumber": 759928, "productName": "마스크 스트랩 분실방지 오염방지 목걸이", "quantity": 2, "unitPrice": 2800, "subtotal": 5600 }
+        ],
+        "paymentAmount": 26600
+      },
+      "timestamp": "2025-01-19T12:00:00"
     }
     ```
 
