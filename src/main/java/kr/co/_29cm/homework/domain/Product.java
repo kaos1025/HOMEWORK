@@ -34,7 +34,7 @@ public class Product {
     @Schema(description = "상품명", example = "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종")
     private String name;
 
-    @Column(name = "price", nullable = false, precision = 15, scale = 2)
+    @Column(name = "price", nullable = false, precision = 19, scale = 2)
     @Schema(description = "판매가격", example = "21000")
     private BigDecimal price;
 

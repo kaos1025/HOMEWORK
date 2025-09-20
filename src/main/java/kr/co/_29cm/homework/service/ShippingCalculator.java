@@ -21,7 +21,7 @@ public class ShippingCalculator {
 
     public BigDecimal calculateTotalPaymentAmount(BigDecimal totalOrderAmount) {
         BigDecimal shippingFee = calculateShippingFee(totalOrderAmount);
-        return totalOrderAmount.add(shippingFee);
+        return totalOrderAmount.add(shippingFee).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     /**

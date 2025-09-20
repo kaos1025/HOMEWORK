@@ -31,7 +31,7 @@ public class OrderItem {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @Column(name = "unit_price", nullable = false, precision = 15, scale = 2)
+    @Column(name = "unit_price", nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
 
     @Column(name = "quantity", nullable = false)
@@ -50,7 +50,7 @@ public class OrderItem {
     }
 
     public BigDecimal getTotalPrice() {
-        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+        return unitPrice.multiply(BigDecimal.valueOf(quantity)).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 }
 
