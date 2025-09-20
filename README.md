@@ -27,12 +27,19 @@ gradlew.bat bootRun
 - 주문 처리: 트랜잭션 + 비관적 락으로 재고 일관성 보장, 5만원 미만 배송비 2,500원
 - Open-in-view 비활성화, 컨트롤러 레벨 DTO로 응답
 
-## API 명세
+## API 문서
 
-- GET `/api/products`
+### Swagger UI
+애플리케이션 실행 후 다음 URL에서 API 문서를 확인할 수 있습니다:
+- **Swagger UI**: http://localhost:8080/swagger-ui.html
+- **OpenAPI JSON**: http://localhost:8080/api-docs
+
+### API 엔드포인트
+
+- **GET `/api/products`** - 상품 목록 조회
   - 응답: `[ { id, productNumber, name, price, stockQuantity } ]`
 
-- POST `/api/orders`
+- **POST `/api/orders`** - 상품 주문
   - 요청 Body:
     ```json
     {
@@ -45,11 +52,11 @@ gradlew.bat bootRun
   - 응답 Body:
     ```json
     {
-      "orderNumber": "...",
-      "orderedAt": "2025-09-19T12:00:00",
+      "orderNumber": "550e8400-e29b-41d4-a716-446655440000",
+      "orderedAt": "2025-01-19T12:00:00",
       "items": [
-        { "productNumber": 768848, "productName": "...", "quantity": 1, "unitPrice": 21000 },
-        { "productNumber": 759928, "productName": "...", "quantity": 2, "unitPrice": 2800 }
+        { "productNumber": 768848, "productName": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종", "quantity": 1, "unitPrice": 21000 },
+        { "productNumber": 759928, "productName": "마스크 스트랩 분실방지 오염방지 목걸이", "quantity": 2, "unitPrice": 2800 }
       ],
       "paymentAmount": 26600
     }

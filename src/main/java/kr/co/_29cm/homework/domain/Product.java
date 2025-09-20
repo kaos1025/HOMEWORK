@@ -1,5 +1,6 @@
 package kr.co._29cm.homework.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,22 +17,28 @@ import java.math.BigDecimal;
 @Table(name = "products")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Schema(description = "상품 정보")
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "상품 ID", example = "1")
     private Long id;
 
     @Column(name = "product_number", nullable = false, unique = true)
+    @Schema(description = "상품번호", example = "768848")
     private Long productNumber;
 
     @Column(name = "name", nullable = false)
+    @Schema(description = "상품명", example = "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종")
     private String name;
 
     @Column(name = "price", nullable = false, precision = 15, scale = 2)
+    @Schema(description = "판매가격", example = "21000")
     private BigDecimal price;
 
     @Column(name = "stock_quantity", nullable = false)
+    @Schema(description = "재고수량", example = "45")
     private Integer stockQuantity;
 
     public Product(Long productNumber, String name, BigDecimal price, Integer stockQuantity) {
