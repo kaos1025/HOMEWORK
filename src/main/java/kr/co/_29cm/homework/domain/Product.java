@@ -42,9 +42,14 @@ public class Product {
     }
 
     public void decreaseStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("주문 수량은 0보다 커야 합니다.");
+        }
+        
         int after = this.stockQuantity - quantity;
         if (after < 0) {
-            throw new IllegalArgumentException("재고가 부족합니다.");
+            throw new kr.co._29cm.homework.exception.InsufficientStockException(
+                    this.productNumber, this.name, quantity, this.stockQuantity);
         }
         this.stockQuantity = after;
     }
