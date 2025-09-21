@@ -90,8 +90,8 @@ public class IdempotencyService {
     @Transactional
     public void cleanupExpiredKeys() {
         log.info("만료된 Idempotency 키 정리 시작");
-        int deletedCount = idempotencyKeyRepository.deleteExpiredKeys(LocalDateTime.now());
-        log.info("만료된 Idempotency 키 정리 완료: {}개 삭제", deletedCount);
+        idempotencyKeyRepository.deleteExpiredKeys(LocalDateTime.now());
+        log.info("만료된 Idempotency 키 정리 완료");
     }
 
     @FunctionalInterface

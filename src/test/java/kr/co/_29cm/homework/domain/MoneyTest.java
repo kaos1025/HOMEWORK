@@ -200,7 +200,7 @@ class MoneyTest {
     @DisplayName("문자열 표현")
     void testToString() {
         // Given
-        Money money = Money.of(12345.67);
+        Money money = Money.of(BigDecimal.valueOf(12345.67));
 
         // When & Then
         assertThat(money.toString()).isEqualTo("12345.67");

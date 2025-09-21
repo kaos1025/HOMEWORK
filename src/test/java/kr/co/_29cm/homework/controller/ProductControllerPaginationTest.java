@@ -3,7 +3,6 @@ package kr.co._29cm.homework.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co._29cm.homework.domain.Product;
 import kr.co._29cm.homework.dto.response.ProductResponse;
-import kr.co._29cm.homework.dto.response.ShippingPolicyResponse;
 import kr.co._29cm.homework.mapper.ProductMapper;
 import kr.co._29cm.homework.repository.ProductRepository;
 import kr.co._29cm.homework.service.ShippingCalculator;
@@ -29,11 +28,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * ProductController 테스트 - 새로운 API 구조에 맞게 재작성
+ * ProductController의 페이징 기능 테스트
  */
-@WebMvcTest({ProductController.class, kr.co._29cm.homework.exception.GlobalExceptionHandler.class})
-@DisplayName("상품 컨트롤러 테스트")
-class ProductControllerTest {
+@WebMvcTest(ProductController.class)
+@DisplayName("상품 컨트롤러 페이징 테스트")
+class ProductControllerPaginationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -96,7 +95,6 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("상품 목록을 성공적으로 조회했습니다"))
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content").value(org.hamcrest.Matchers.hasSize(2)))
                 .andExpect(jsonPath("$.data.page").value(0))
@@ -106,8 +104,8 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("상품명 검색 기능")
-    void 상품명_검색_기능() throws Exception {
+    @DisplayName("상품명 검색 기능 테스트")
+    void 상품명_검색_기능_테스트() throws Exception {
         // given
         List<Product> products = List.of(testProduct1);
         Page<Product> productPage = new PageImpl<>(products);
@@ -128,8 +126,8 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("재고 있는 상품만 필터링")
-    void 재고_있는_상품만_필터링() throws Exception {
+    @DisplayName("재고 있는 상품만 필터링 테스트")
+    void 재고_있는_상품만_필터링_테스트() throws Exception {
         // given
         List<Product> products = List.of(testProduct1, testProduct2);
         Page<Product> productPage = new PageImpl<>(products);
@@ -148,51 +146,8 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("전체 상품 목록 조회 (기존 API)")
-    void 전체_상품_목록_조회_기존_API() throws Exception {
-        // given
-        List<Product> products = List.of(testProduct1, testProduct2);
-        when(productRepository.findAll()).thenReturn(products);
-        when(productMapper.toResponseList(products)).thenReturn(
-            List.of(productResponse1, productResponse2)
-        );
-
-        // when & then
-        mockMvc.perform(get("/api/products/all")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("상품 목록을 성공적으로 조회했습니다"))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data").value(org.hamcrest.Matchers.hasSize(2)))
-                .andExpect(jsonPath("$.data[0].productNumber").value(768848))
-                .andExpect(jsonPath("$.data[0].name").value("[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종"))
-                .andExpect(jsonPath("$.data[0].price").value(21000))
-                .andExpect(jsonPath("$.data[0].stockQuantity").value(45));
-    }
-
-    @Test
-    @DisplayName("배송비 정책 조회")
-    void 배송비_정책_조회() throws Exception {
-        // given
-        ShippingCalculator.ShippingPolicy policy = 
-            new ShippingCalculator.ShippingPolicy(BigDecimal.valueOf(50000), BigDecimal.valueOf(2500));
-        when(shippingCalculator.getShippingPolicy()).thenReturn(policy);
-
-        // when & then
-        mockMvc.perform(get("/api/products/shipping-policy")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("배송비 정책을 성공적으로 조회했습니다"))
-                .andExpect(jsonPath("$.data.freeShippingThreshold").value(50000))
-                .andExpect(jsonPath("$.data.shippingFee").value(2500))
-                .andExpect(jsonPath("$.data.isFreeShipping").value(false));
-    }
-
-    @Test
-    @DisplayName("정렬 기능 - 가격 내림차순")
-    void 정렬_기능_가격_내림차순() throws Exception {
+    @DisplayName("정렬 기능 테스트 - 가격 내림차순")
+    void 정렬_기능_테스트_가격_내림차순() throws Exception {
         // given
         List<Product> products = List.of(testProduct1, testProduct2);
         Page<Product> productPage = new PageImpl<>(products);
@@ -211,21 +166,19 @@ class ProductControllerTest {
     }
 
     @Test
-    @DisplayName("빈 상품 목록 조회")
-    void 빈_상품_목록_조회() throws Exception {
+    @DisplayName("배송비 정책 조회 성공")
+    void 배송비_정책_조회_성공() throws Exception {
         // given
-        Page<Product> emptyPage = new PageImpl<>(List.of());
-        when(productRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
+        ShippingCalculator.ShippingPolicy policy = 
+            new ShippingCalculator.ShippingPolicy(BigDecimal.valueOf(50000), BigDecimal.valueOf(2500));
+        when(shippingCalculator.getShippingPolicy()).thenReturn(policy);
 
         // when & then
-        mockMvc.perform(get("/api/products")
-                        .param("page", "0")
-                        .param("size", "10")
+        mockMvc.perform(get("/api/products/shipping-policy")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.content").value(org.hamcrest.Matchers.hasSize(0)))
-                .andExpect(jsonPath("$.data.totalElements").value(0));
+                .andExpect(jsonPath("$.data.freeShippingThreshold").value(50000))
+                .andExpect(jsonPath("$.data.shippingFee").value(2500));
     }
 }

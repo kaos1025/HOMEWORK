@@ -33,8 +33,8 @@ public class OrderService {
 
     @Transactional
     public Order placeOrder(List<OrderItemRequest> requests) {
-        log.info("주문 시작: 상품 수량 {}", requests.size());
         validateOrderRequest(requests);
+        log.info("주문 시작: 상품 수량 {}", requests.size());
 
         Order order = new Order(generateOrderNumber(), LocalDateTime.now());
 

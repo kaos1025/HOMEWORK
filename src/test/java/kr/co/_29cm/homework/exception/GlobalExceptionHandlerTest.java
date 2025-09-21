@@ -37,7 +37,7 @@ class GlobalExceptionHandlerTest {
                         .content("{\"items\":[{\"productNumber\":999999,\"quantity\":1}]}"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("PRODUCT_NOT_FOUND"))
-                .andExpect(jsonPath("$.message").contains("상품을 찾을 수 없습니다"));
+                .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("상품을 찾을 수 없습니다")));
     }
 
     @Test
@@ -52,7 +52,7 @@ class GlobalExceptionHandlerTest {
                         .content("{\"items\":[{\"productNumber\":768848,\"quantity\":100}]}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INSUFFICIENT_STOCK"))
-                .andExpect(jsonPath("$.message").contains("재고가 부족합니다"));
+                .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("재고가 부족합니다")));
     }
 
     @Test
