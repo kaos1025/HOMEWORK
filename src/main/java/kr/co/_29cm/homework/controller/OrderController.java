@@ -1,25 +1,31 @@
 package kr.co._29cm.homework.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import kr.co._29cm.homework.domain.Order;
 import kr.co._29cm.homework.dto.request.OrderRequest;
-import kr.co._29cm.homework.dto.response.ApiResponse;
 import kr.co._29cm.homework.dto.response.OrderResponse;
+import kr.co._29cm.homework.dto.response.OrderSummaryResponse;
+import kr.co._29cm.homework.dto.response.PageResponse;
+import kr.co._29cm.homework.exception.OrderNotFoundException;
 import kr.co._29cm.homework.mapper.OrderMapper;
 import kr.co._29cm.homework.service.IdempotencyService;
 import kr.co._29cm.homework.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -102,7 +108,7 @@ public class OrderController {
                     )
             )
     })
-    public ApiResponse<OrderResponse> placeOrder(
+    public kr.co._29cm.homework.dto.response.ApiResponse<OrderResponse> placeOrder(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "주문할 상품 목록",
                     required = true,
@@ -127,7 +133,92 @@ public class OrderController {
         }
         
         OrderResponse orderResponse = orderMapper.toResponse(order);
-        return ApiResponse.success(orderResponse, "주문이 성공적으로 처리되었습니다");
+        return kr.co._29cm.homework.dto.response.ApiResponse.success(orderResponse, "주문이 성공적으로 처리되었습니다");
+    }
+    
+    /**
+     * 주문 상세 조회
+     */
+    @GetMapping("/{orderNumber}")
+    @Operation(
+            summary = "주문 상세 조회",
+            description = "주문번호로 특정 주문의 상세 정보를 조회합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "주문 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = kr.co._29cm.homework.dto.response.ApiResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "주문을 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = kr.co._29cm.homework.dto.response.ApiResponse.class)
+                    )
+            )
+    })
+    public kr.co._29cm.homework.dto.response.ApiResponse<OrderResponse> getOrder(
+            @Parameter(description = "주문번호", example = "550e8400-e29b-41d4-a716-446655440000")
+            @PathVariable String orderNumber
+    ) {
+        Order order = orderService.findOrderByOrderNumber(orderNumber)
+                .orElseThrow(() -> new OrderNotFoundException(orderNumber));
+        
+        OrderResponse orderResponse = orderMapper.toResponse(order);
+        return kr.co._29cm.homework.dto.response.ApiResponse.success(orderResponse, "주문 정보를 성공적으로 조회했습니다");
+    }
+    
+    /**
+     * 주문 목록 조회 (페이징)
+     */
+    @GetMapping
+    @Operation(
+            summary = "주문 목록 조회 (페이징)",
+            description = "주문 목록을 페이징으로 조회합니다. 최신 주문부터 정렬됩니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "주문 목록 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = kr.co._29cm.homework.dto.response.ApiResponse.class)
+                    )
+            )
+    })
+    public kr.co._29cm.homework.dto.response.ApiResponse<PageResponse<OrderSummaryResponse>> getOrders(
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            
+            @Parameter(description = "페이지 크기", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            
+            @Parameter(description = "조회 시작일 (yyyy-MM-ddTHH:mm:ss)", example = "2025-01-01T00:00:00")
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            
+            @Parameter(description = "조회 종료일 (yyyy-MM-ddTHH:mm:ss)", example = "2025-12-31T23:59:59")
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderedAt"));
+        
+        Page<Order> orderPage;
+        if (startDate != null && endDate != null) {
+            orderPage = orderService.findOrdersByDateRange(startDate, endDate, pageable);
+        } else {
+            orderPage = orderService.findOrders(pageable);
+        }
+        
+        Page<OrderSummaryResponse> responsePage = orderPage.map(orderMapper::toSummaryResponse);
+        PageResponse<OrderSummaryResponse> pageResponse = PageResponse.from(responsePage);
+        
+        return kr.co._29cm.homework.dto.response.ApiResponse.success(pageResponse, "주문 목록을 성공적으로 조회했습니다");
     }
 }
 

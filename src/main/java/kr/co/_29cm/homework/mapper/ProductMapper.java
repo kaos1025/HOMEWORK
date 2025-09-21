@@ -4,6 +4,8 @@ import kr.co._29cm.homework.domain.Product;
 import kr.co._29cm.homework.dto.response.ProductResponse;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class ProductMapper {
 

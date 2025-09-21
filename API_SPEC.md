@@ -57,15 +57,25 @@
 
 ## API 엔드포인트
 
-### 1. 상품 목록 조회
+### 1. 상품 목록 조회 (페이징)
 
 #### GET /api/products
 
-전체 상품 목록을 조회합니다.
+상품 목록을 페이징으로 조회합니다. 검색어, 정렬, 재고 필터링을 지원합니다.
 
-**요청**
+**요청 파라미터**
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|------|--------|------|
+| `page` | Integer | X | 0 | 페이지 번호 (0부터 시작) |
+| `size` | Integer | X | 10 | 페이지 크기 |
+| `sort` | String | X | id | 정렬 기준 (id, name, price, stockQuantity) |
+| `direction` | String | X | asc | 정렬 방향 (asc, desc) |
+| `search` | String | X | - | 상품명 검색어 |
+| `availableOnly` | Boolean | X | false | 재고 있는 상품만 조회 |
+
+**요청 예시**
 ```
-GET /api/products
+GET /api/products?page=0&size=5&sort=name&direction=asc&search=스탠리&availableOnly=true
 Content-Type: application/json
 ```
 
@@ -73,25 +83,63 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "상품 목록 조회 성공",
+  "message": "상품 목록을 성공적으로 조회했습니다",
   "data": {
-    "products": [
+    "content": [
       {
         "id": 1,
         "productNumber": 768848,
         "name": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종",
         "price": 21000,
         "stockQuantity": 45
-      },
-      {
-        "id": 2,
-        "productNumber": 759928,
-        "name": "마스크 스트랩 분실방지 오염방지 목걸이",
-        "price": 2800,
-        "stockQuantity": 100
       }
-    ]
+    ],
+    "page": 0,
+    "size": 5,
+    "totalElements": 1,
+    "totalPages": 1,
+    "first": true,
+    "last": true,
+    "hasNext": false,
+    "hasPrevious": false
   },
+  "timestamp": "2025-01-19T12:00:00"
+}
+```
+
+### 1-1. 전체 상품 목록 조회 (기존 API)
+
+#### GET /api/products/all
+
+전체 상품 목록을 한번에 조회합니다. (하위 호환성을 위해 유지)
+
+**요청**
+```
+GET /api/products/all
+Content-Type: application/json
+```
+
+**응답**
+```json
+{
+  "success": true,
+  "message": "상품 목록을 성공적으로 조회했습니다",
+  "data": [
+    {
+      "id": 1,
+      "productNumber": 768848,
+      "name": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종",
+      "price": 21000,
+      "stockQuantity": 45
+    },
+    {
+      "id": 2,
+      "productNumber": 759928,
+      "name": "마스크 스트랩 분실방지 오염방지 목걸이",
+      "price": 2800,
+      "stockQuantity": 100
+    }
+  ],
   "timestamp": "2025-01-19T12:00:00"
 }
 ```
@@ -218,6 +266,116 @@ Content-Type: application/json
 | `shippingFee` | BigDecimal | 배송비 |
 | `totalPayment` | BigDecimal | 총 결제금액 |
 
+### 4. 주문 상세 조회
+
+#### GET /api/orders/{orderNumber}
+
+주문번호로 특정 주문의 상세 정보를 조회합니다.
+
+**요청**
+```
+GET /api/orders/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+```
+
+**성공 응답 (200 OK)**
+```json
+{
+  "success": true,
+  "message": "주문 정보를 성공적으로 조회했습니다",
+  "data": {
+    "orderNumber": "550e8400-e29b-41d4-a716-446655440000",
+    "orderedAt": "2025-01-19T12:00:00",
+    "orderItems": [
+      {
+        "productNumber": 768848,
+        "productName": "[STANLEY] GO CERAMIVAC 진공 텀블러/보틀 3종",
+        "price": 21000,
+        "quantity": 1,
+        "amount": 21000
+      }
+    ],
+    "totalAmount": 21000,
+    "shippingFee": 2500,
+    "totalPayment": 23500
+  },
+  "timestamp": "2025-01-19T12:00:00"
+}
+```
+
+**에러 응답 (404 Not Found)**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ORDER_NOT_FOUND",
+    "message": "주문번호 550e8400-e29b-41d4-a716-446655440000인 주문을 찾을 수 없습니다"
+  },
+  "timestamp": "2025-01-19T12:00:00"
+}
+```
+
+### 5. 주문 목록 조회 (페이징)
+
+#### GET /api/orders
+
+주문 목록을 페이징으로 조회합니다. 최신 주문부터 정렬됩니다.
+
+**요청 파라미터**
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|------|--------|------|
+| `page` | Integer | X | 0 | 페이지 번호 (0부터 시작) |
+| `size` | Integer | X | 10 | 페이지 크기 |
+| `startDate` | DateTime | X | - | 조회 시작일 (yyyy-MM-ddTHH:mm:ss) |
+| `endDate` | DateTime | X | - | 조회 종료일 (yyyy-MM-ddTHH:mm:ss) |
+
+**요청 예시**
+```
+GET /api/orders?page=0&size=5&startDate=2025-01-01T00:00:00&endDate=2025-01-31T23:59:59
+Content-Type: application/json
+```
+
+**성공 응답 (200 OK)**
+```json
+{
+  "success": true,
+  "message": "주문 목록을 성공적으로 조회했습니다",
+  "data": {
+    "content": [
+      {
+        "orderNumber": "550e8400-e29b-41d4-a716-446655440000",
+        "orderedAt": "2025-01-19T12:00:00",
+        "itemCount": 2,
+        "totalPayment": 29100
+      },
+      {
+        "orderNumber": "550e8400-e29b-41d4-a716-446655440001",
+        "orderedAt": "2025-01-19T11:30:00",
+        "itemCount": 1,
+        "totalPayment": 23500
+      }
+    ],
+    "page": 0,
+    "size": 5,
+    "totalElements": 2,
+    "totalPages": 1,
+    "first": true,
+    "last": true,
+    "hasNext": false,
+    "hasPrevious": false
+  },
+  "timestamp": "2025-01-19T12:00:00"
+}
+```
+
+**응답 필드 설명 (주문 요약)**
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `orderNumber` | String | 주문번호 |
+| `orderedAt` | String | 주문 일시 (ISO 8601) |
+| `itemCount` | Integer | 주문 상품 개수 |
+| `totalPayment` | BigDecimal | 총 결제금액 |
+
 ## 에러 응답
 
 ### 400 Bad Request - 유효성 검증 실패
@@ -336,9 +494,21 @@ Content-Type: application/json
 
 ### cURL 예시
 
-#### 상품 목록 조회
+#### 상품 목록 조회 (페이징)
 ```bash
-curl -X GET http://localhost:8080/api/products \
+curl -X GET "http://localhost:8080/api/products?page=0&size=10&sort=name&direction=asc" \
+  -H "Content-Type: application/json"
+```
+
+#### 상품 검색 (재고 있는 상품만)
+```bash
+curl -X GET "http://localhost:8080/api/products?search=스탠리&availableOnly=true" \
+  -H "Content-Type: application/json"
+```
+
+#### 전체 상품 목록 조회 (기존 API)
+```bash
+curl -X GET http://localhost:8080/api/products/all \
   -H "Content-Type: application/json"
 ```
 
@@ -379,6 +549,24 @@ curl -X POST http://localhost:8080/api/orders \
       }
     ]
   }'
+```
+
+#### 주문 상세 조회
+```bash
+curl -X GET http://localhost:8080/api/orders/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Content-Type: application/json"
+```
+
+#### 주문 목록 조회 (페이징)
+```bash
+curl -X GET "http://localhost:8080/api/orders?page=0&size=5" \
+  -H "Content-Type: application/json"
+```
+
+#### 기간별 주문 조회
+```bash
+curl -X GET "http://localhost:8080/api/orders?startDate=2025-01-01T00:00:00&endDate=2025-01-31T23:59:59" \
+  -H "Content-Type: application/json"
 ```
 ## 제한사항
 

@@ -4,6 +4,7 @@ import kr.co._29cm.homework.domain.Order;
 import kr.co._29cm.homework.domain.OrderItem;
 import kr.co._29cm.homework.dto.request.OrderRequest;
 import kr.co._29cm.homework.dto.response.OrderResponse;
+import kr.co._29cm.homework.dto.response.OrderSummaryResponse;
 import kr.co._29cm.homework.service.OrderService;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,18 @@ public class OrderMapper {
                 .items(itemResponses)
                 .paymentAmount(order.getPaymentAmount())
                 .build();
+    }
+
+    /**
+     * 주문 요약 응답으로 변환
+     */
+    public OrderSummaryResponse toSummaryResponse(Order order) {
+        return new OrderSummaryResponse(
+                order.getOrderNumber(),
+                order.getOrderedAt(),
+                order.getItems().size(),
+                order.getPaymentAmount()
+        );
     }
 
     private OrderResponse.OrderItemResponse toItemResponse(OrderItem item) {
